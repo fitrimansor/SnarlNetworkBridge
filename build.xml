@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="createSnarlNetworkBridge" name="Create Runnable Jar for Project ACCUWeatherSnarl">
+<project default="createSnarlNetworkBridge" name="Creates a SnarlNetworkeBridge.jar">
 
 	<target name="init">
 		<delete dir="./dist" />
