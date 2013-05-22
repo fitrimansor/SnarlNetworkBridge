@@ -48,7 +48,7 @@ public class SNPProperty {
 	public SNPProperty(String name) {
 		this.name = name;
 	}
-
+	
 	/**
 	 * Sets the value of a property
 	 * 
@@ -80,7 +80,7 @@ public class SNPProperty {
 	@Override
 	public String toString() {
 		if (value == null)
-			return "";
-		return "#?" + name + "=" + value ;
+			return name;
+		return "&" + name + "=" + value ;
 	}
 }
