@@ -46,14 +46,17 @@ public class SnarlNetworkBridge {
 	/**
 	 * The SNP version
 	 */
-	private static final float SNPVersion = 1.1f;
+	private static final float SNPVersion = 2.5f; //1.1f
 	/**
 	 * The SNP header containing version
 	 */
-	public static final String head = "type=SNP#?version=" + SNPVersion;
+	//public static final String head = "type=SNP#?version=" + SNPVersion;
+	public static final String head = "snp://";
 
-	// the Applicatinname registred with Snarl
-	static SNPProperty appName = new SNPProperty("app");
+	// the Application Name registred with Snarl
+	static SNPProperty appSig = new SNPProperty("app-sig");
+	static SNPProperty appName = new SNPProperty("title");
+	static SNPProperty appUID = new SNPProperty("uid");
 
 	private static int timeout = 10;
 
@@ -68,6 +71,7 @@ public class SnarlNetworkBridge {
 	private static Socket sock = null;
 	private static PrintWriter out = null;
 	private static BufferedReader in = null;
+	private int id = 0;
 
 	/**
 	 * Register an application with Snarl
@@ -79,13 +83,18 @@ public class SnarlNetworkBridge {
 	 * @return a message containing the reply of Snarl or null if an error
 	 *         occurs
 	 */
-	static public Message snRegisterConfig(String applicationName, String host)
+	static public Message snRegisterConfig(String applicationName,
+						String applicationSig,
+						String appUniqueId, 
+						String host, String iconURL)
 			throws Error {
 		if (snarlIsRegisterd) {
-			throw new Error("You have to unreister " + applicationName
+			throw new Error("You have to unregister " + applicationName
 					+ " first.");
 		}
 		appName.setValue(applicationName);
+		appSig.setValue(applicationSig);
+		appUID.setValue(appUniqueId);
 		try {
 			sock = new Socket(InetAddress.getByName(host), 9887);
 			out = new PrintWriter(sock.getOutputStream(), true);
@@ -109,7 +118,12 @@ public class SnarlNetworkBridge {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Message msg = send(new Message("register", appName));
+		//Message msg = send(new Message("register", appName));
+		Message msg = send(new Message("register", new SNPProperty[] { 
+						appSig,
+						appUID,
+						appName,
+						new SNPProperty("icon", iconURL)}));
 
 		snarlIsRegisterd = snarlIsRunning = msg != null
 				&& msg.getReply() != Reply.SNP_ERROR_NOT_RUNNING;
@@ -139,45 +153,47 @@ public class SnarlNetworkBridge {
 	 * @return a message containing the reply of Snarl
 	 */
 	public static Message snRegisterAlert(String title, String displayName) {
-		return send(new Message("add_class", new SNPProperty[] { appName,
-				new SNPProperty("class", title),
-				new SNPProperty("title", displayName) }));
+		return send(new Message("addclass", new SNPProperty[] { 
+				appSig,
+				new SNPProperty("id", title),
+				new SNPProperty("title", title),
+				new SNPProperty("name", displayName) }));
 
 	}
 
 	/**
 	 * Displays a Snarl notification with the default timeout
 	 * 
-	 * @param alert
+	 * @param alert the <tt>String</tt> to be used by the new instance for
 	 *            the name of an registered Alert
-	 * @param title
+	 * @param title the <tt>String</tt> to be used by the new instance for
 	 *            the Title of the Notification
-	 * @param content
+	 * @param content the <tt>String</tt> to be used by the new instance for
 	 *            the Content of the Notification
 	 * @return the Snarl notification
 	 */
 	public static Notification snShowMessage(String alert, String title,
 			String content) {
-		return snShowMessage(alert, title, content, timeout);
+		return snShowMessage(alert, title, content, null, timeout);
 	}
 
 	/**
 	 * Displays a Snarl notification with a specific timeout
 	 * 
-	 * @param alert
+	 * @param alert the <tt>String</tt> to be used by the new instance for
 	 *            the name of an registered Alert
-	 * @param title
+	 * @param title the <tt>String</tt> to be used by the new instance for
 	 *            the Title of the Notification
-	 * @param content
+	 * @param content the <tt>String</tt> to be used by the new instance for
 	 *            the Content of the Notification
-	 * @param timeout
+	 * @param timeout the <tt>String</tt> to be used by the new instance for
 	 *            an integer value representing the timeout
 	 * 
 	 * @return the Snarl notification
 	 */
 	public static Notification snShowMessage(String alert, String title,
-			String content, int timeout) {
-		return snShowMessage(new Notification(alert, title, content, null,
+			String content, String iconURL, int timeout) {
+		return snShowMessage(new Notification(alert, title, content, iconURL,
 				timeout));
 	}
 
@@ -203,7 +219,7 @@ public class SnarlNetworkBridge {
 	 */
 	public static Message snRevokeConfig() {
 		snarlIsRegisterd = false;
-		Message rep = new Message("unregister", appName);
+		Message rep = new Message("unregister", appSig);
 		send(rep);
 		close();
 		return rep;
@@ -244,7 +260,7 @@ public class SnarlNetworkBridge {
 	 * @return true if Snarl is running and listening to network Connections
 	 *         otherwise false
 	 */
-	public static boolean snIsRunnging() {
+	public static boolean snIsRunning() {
 		return snarlIsRunning;
 	}
 
@@ -257,7 +273,8 @@ public class SnarlNetworkBridge {
 	 * 
 	 * 
 	 */
-	private static void listen() {
+	private static void listen() 
+	{
 		String line = null;
 		String data[] = null;
 		Message reply = null;
@@ -266,6 +283,7 @@ public class SnarlNetworkBridge {
 			while (snarlIsRegisterd&&(line=in.readLine())!=null) {
 				if (debug)
 					System.out.println("Reciving: " + line);
+				line = line.replace("\r\n", "");
 				data = line.split("/");
 				replyType = Reply.getByCode(Integer.valueOf(data[2]));
 				if (data.length == 5) {
@@ -273,16 +291,18 @@ public class SnarlNetworkBridge {
 					// Set action
 					if (notifications.containsKey(Integer.valueOf(data[4]))) {
 						reply = notifications.get(Integer.valueOf(data[4]));
-						((Notification) reply).setUserAction(Action
+						/*((Notification) reply).setUserAction(Action
 								.getByCode(replyType.getCode()));
+								*/
 					} else {
 						// set ID
 						if (replyType == Reply.SNP_SUCCESS) {
 							reply = waitingMessages.removeLast();
 							reply.setReply(replyType);
-							((Notification) reply).setId(data[4]);
+							/*((Notification) reply).setId(data[4]);
 							notifications.put(((Notification) reply).getId(),
 									(Notification) reply);
+									*/
 						}
 					}
 				} else {
@@ -308,16 +328,20 @@ public class SnarlNetworkBridge {
 	 *            the Message to send
 	 * 
 	 */
-	private static Message send(Message msg) {
-		if (!snarlIsRunning) {
+	private static Message send(Message msg)
+	{
+		if (!snarlIsRunning) 
+		{
 			System.err.println("Snarl is not running");
 			return null;
 		}
 		waitingMessages.push(msg);
 		if (debug)
 			System.out.println("Sending: " + msg);
+		
 		out.println(msg);
-		while (msg.getReply() == null) {
+		while (msg.getReply() == null) 
+		{
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -326,7 +350,8 @@ public class SnarlNetworkBridge {
 			}
 		}
 		return msg;
-	}
+	}	
+
 
 	/**
 	 * Called by snRevokeConfig() closes the Socket and the Buffers
