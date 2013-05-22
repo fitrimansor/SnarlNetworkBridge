@@ -34,7 +34,7 @@ public class testing {
                                             "127.0.0.1", "!message-new_message");
 		SnarlNetworkBridge.snRegisterAlert("test");
 		//register alert/class is now optional
-		Notification notifyMsg = new Notification("",
+		Notification notifyMsg = new Notification("test",
                 		"1004 wrote", "this is another test msg", "!message-new_message", 3);
         
 		notifyMsg.setActionListener(new SNPActionListener() {
