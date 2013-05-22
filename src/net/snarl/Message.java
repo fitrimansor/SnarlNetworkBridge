@@ -34,17 +34,17 @@ public class Message {
 	/**
 	 * the SNP action(notification,register...);
 	 */
-	protected SNPProperty action = new SNPProperty("action");
+	protected SNPProperty action;
 
 	/**
 	 * The Constructor of a Snarl Message
 	 * 
 	 * @param propertys
-	 *            an aray  of {@link SNPProperty}s 
+	 *            an array  of {@link SNPProperty}s 
 	 */
-	public Message(String action, SNPProperty[] propertys) {
+	public Message(String action, SNPProperty[] propertys) {		
+		this.action = new SNPProperty(action);
 		this.msg = propertys;
-		this.action.setValue(action);
 	}
 
 	/**
@@ -53,11 +53,9 @@ public class Message {
 	 * @param property the {@link SNPProperty} of the message
 	 */
 	public Message(String action, SNPProperty property) {
-		this.action.setValue(action);
+		this.action = new SNPProperty(action);
 		this.msg = new SNPProperty[] { property };
 	}
-
-
 
 	/**
 	 * Returns the Reply of Snarl if set, otherwise null
@@ -82,12 +80,11 @@ public class Message {
 	 * Returns the SNP String
 	 */
 	public String toString() {
-		String out = SnarlNetworkBridge.head + action;
+		String out = SnarlNetworkBridge.head + action;		
 		for (SNPProperty p : msg) {
 			out += p;
 		}
+		out = out.replaceFirst("&", "?");
 		return out+"\r\n";
-	}
-
-	
+	}	
 }
