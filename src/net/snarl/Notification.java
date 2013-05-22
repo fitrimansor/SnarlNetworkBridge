@@ -27,7 +27,7 @@ package net.snarl;
  * 
  */
 
-public class Notification extends Message {
+public class Notification extends Message {	
 	private int id = -1;
 	private SNPActionListener actionListener = null;
 	private Action userAction = null;
@@ -36,20 +36,20 @@ public class Notification extends Message {
 	 * Creates a new Default Notification with SnarlNetworkBridge default
 	 * timeout
 	 * 
-	 * @param alert
+	 * @param alert the <tt>String</tt> to be used by the new instance for
 	 *            the name of the alert class
-	 * @param title
+	 * @param title the <tt>String</tt> to be used by the new instance for
 	 *            the title of the Notification
-	 * @param content
+	 * @param content the <tt>String</tt> to be used by the new instance for
 	 *            the content of the Notification
-	 * @param iconUrl
+	 * @param iconUrl the <tt>String</tt> to be used by the new instance for
 	 *            the http url to the icon
 	 */
 	public Notification(String alert, String title, String content,
 			String iconUrl) {
-		super("notification", new SNPProperty[] {
-				SnarlNetworkBridge.appName,
-				new SNPProperty("class", alert),
+		super("notify", new SNPProperty[] {
+				SnarlNetworkBridge.appSig,
+				new SNPProperty("id", alert),
 				new SNPProperty("title", title),
 				new SNPProperty("text", content),
 				new SNPProperty("icon", iconUrl),
@@ -60,23 +60,22 @@ public class Notification extends Message {
 	/**
 	 * Creates a new Default Notification
 	 * 
-	 * @param alert
+	 * @param alert the <tt>String</tt> to be used by the new instance for
 	 *            the name of the alert class
-	 * @param title
+	 * @param title the <tt>String</tt> to be used by the new instance for
 	 *            the title of the Notification
-	 * @param content
+	 * @param content the <tt>String</tt> to be used by the new instance for
 	 *            the content of the Notification
-	 * @param iconUrl
+	 * @param iconUrl the <tt>String</tt> to be used by the new instance for
 	 *            the http url to the icon
-	 * @param timeout
+	 * @param timeout the <tt>int</tt> to be used by the new instance for
 	 *            the timeout of the Notification
 	 * 
 	 */
 	public Notification(String alert, String title, String content,
 			String iconUrl, int timeout) {
-		super("notification", new SNPProperty[] {
-				SnarlNetworkBridge.appName,
-				new SNPProperty("class", alert),
+		super("notify", new SNPProperty[] {
+				SnarlNetworkBridge.appSig,				
 				new SNPProperty("title", title),
 				new SNPProperty("text", content),
 				new SNPProperty("icon", iconUrl),
