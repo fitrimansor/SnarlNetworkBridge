@@ -75,7 +75,8 @@ public class Notification extends Message {
 	public Notification(String alert, String title, String content,
 			String iconUrl, int timeout) {
 		super("notify", new SNPProperty[] {
-				SnarlNetworkBridge.appSig,				
+				SnarlNetworkBridge.appSig,
+				new SNPProperty("id", alert),
 				new SNPProperty("title", title),
 				new SNPProperty("text", content),
 				new SNPProperty("icon", iconUrl),
