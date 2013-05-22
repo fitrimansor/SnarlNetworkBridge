@@ -19,6 +19,7 @@
 
 package net;
 
+import java.util.UUID;
 import net.snarl.Notification;
 import net.snarl.SNPActionListener;
 import net.snarl.SnarlNetworkBridge;
@@ -27,11 +28,16 @@ public class testing {
 
 	public static void main(String[] args) {
 		SnarlNetworkBridge.setDebug(true);
-		SnarlNetworkBridge.snRegisterConfig("Test", "localhost");
+		String appUID = UUID.randomUUID().toString();    
+		SnarlNetworkBridge.snRegisterConfig("test-app", 
+                                            "application/x-test-app", appUID,
+                                            "127.0.0.1", "!message-new_message");
 		SnarlNetworkBridge.snRegisterAlert("test");
-		Notification not1=new Notification("bli", "test",
-				"TEST1", "This is a test", 10);
-		not1.setActionListener(new SNPActionListener() {
+		//register alert/class is now optional
+		Notification notifyMsg = new Notification("",
+                		"1004 wrote", "this is another test msg", "!message-new_message", 3);
+        
+		notifyMsg.setActionListener(new SNPActionListener() {
 					
 					public void notificationTimedOut() {
 						// TODO Auto-generated method stub
@@ -52,8 +58,8 @@ public class testing {
 						
 					}
 				});
-		SnarlNetworkBridge.snShowMessage(not1);
-		 SnarlNetworkBridge.snRevokeConfig();
+		SnarlNetworkBridge.snShowMessage(notifyMsg);
+		SnarlNetworkBridge.snRevokeConfig();
 
 	}
 
